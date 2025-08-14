@@ -53,52 +53,55 @@
   </div>
 
   <script>
-    const select = document.getElementById('episodeSelect');
-    const player = document.getElementById('player');
-    const coverImg = document.getElementById('cover');
+  const select = document.getElementById('episodeSelect');
+  const player = document.getElementById('player');
+  const coverImg = document.getElementById('cover');
 
-    // Dropdown befüllen
-    for (let i = 1; i <= 99; i++) {
-      const num = i.toString().padStart(2, '0');
-      const opt = document.createElement('option');
-      opt.value = num;
-      opt.textContent = `Folge ${num}`;
-      select.appendChild(opt);
-    }
+  // Dropdown befüllen
+  for (let i = 1; i <= 99; i++) {
+    const num = i.toString().padStart(2, '0');
+    const opt = document.createElement('option');
+    opt.value = num;
+    opt.textContent = `Folge ${num}`;
+    select.appendChild(opt);
+  }
 
-    // Funktion: Folge setzen
-    function setEpisode(numStr) {
-      // Audio-Quelle setzen
-      const audioPath = `finanz_piano_podcast_${numStr}.m4a`;
-      player.src = audioPath;
+  function setEpisode(numStr) {
+    const audioPath = `finanz_piano_podcast_${numStr}.m4a`;
+    player.src = audioPath;
 
-      // Cover setzen: erst cover_XX.jpg versuchen, bei Fehler auf cover.jpg zurück
-      const specificCover = `cover_${numStr}.jpg`;
-      coverImg.onerror = () => {
-        coverImg.src = 'cover.jpg';
-        coverImg.onerror = null; // verhindert Endlosschleife
-      };
-      coverImg.src = specificCover;
+    const specificCover = `cover_${numStr}.jpg`;
+    coverImg.onerror = () => {
+      coverImg.src = 'cover.jpg';
+      coverImg.onerror = null;
+    };
+    coverImg.src = specificCover;
 
-      // Auswahl merken
-      select.value = numStr;
-      localStorage.setItem('lastEpisode', numStr);
-    }
+    select.value = numStr;
+    localStorage.setItem('lastEpisode', numStr);
+  }
 
-    // Startfolge: letzte oder 01
-    const last = localStorage.getItem('lastEpisode') || '01';
-    setEpisode(last);
+  // URL-Parameter lesen
+  const params = new URLSearchParams(window.location.search);
+  const urlEpisode = params.get('ep');
 
-    // Wechsel über Dropdown
-    select.addEventListener('change', () => {
-      setEpisode(select.value);
-      player.play();
-    });
+  // Startfolge: URL > LocalStorage > 01
+  const last = localStorage.getItem('lastEpisode') || '01';
+  const startEpisode = urlEpisode && /^[0-9]{2}$/.test(urlEpisode) ? urlEpisode : last;
+  setEpisode(startEpisode);
 
-    // Beim Abspielen aktuelle Folge merken
-    player.addEventListener('play', () => {
-      localStorage.setItem('lastEpisode', select.value);
-    });
-  </script>
+  // Wechsel per Auswahl
+  select.addEventListener('change', () => {
+    setEpisode(select.value);
+    player.play();
+  });
+
+  // Beim Abspielen aktuelle Folge merken
+  player.addEventListener('play', () => {
+    localStorage.setItem('lastEpisode', select.value);
+  });
+</script>
+
 </body>
 </html>
+
